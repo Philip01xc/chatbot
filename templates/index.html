@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .chat-container {
+            width: 400px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .chat-box {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .chat-input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .chat-message {
+            margin: 5px 0;
+        }
+        .chat-message.user {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+        <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." onkeypress="sendMessage(event)">
+    </div>
+
+    <script>
+        function sendMessage(event) {
+            if (event.key === 'Enter') {
+                const chatBox = document.getElementById('chat-box');
+                const userMessage = document.getElementById('chat-input').value;
+                if (userMessage.trim() === '') return;
+
+                // Append user message to chat box
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.classList.add('chat-message', 'user');
+                userMessageDiv.textContent = userMessage;
+                chatBox.appendChild(userMessageDiv);
+
+                // Send user message to server
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: userMessage })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Append bot message to chat box
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.classList.add('chat-message');
+                    botMessageDiv.textContent = data.message;
+                    chatBox.appendChild(botMessageDiv);
+
+                    if (data.image) {
+                        const botImage = document.createElement('img');
+                        botImage.src = data.image;
+                        botImage.style.maxWidth = '100%';
+                        chatBox.appendChild(botImage);
+                    }
+
+                    // Scroll to the bottom of the chat box
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                });
+
+                // Clear input field
+                document.getElementById('chat-input').value = '';
+            }
+        }
+    </script>
+</body>
+</html>
+ECHO is on.
